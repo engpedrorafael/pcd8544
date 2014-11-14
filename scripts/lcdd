@@ -1,0 +1,29 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          lcdd
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: LCD daemon
+# Description:       Monitors a pipe and sends inputs to LCD
+### END INIT INFO
+
+case "$1" in
+  start)
+      echo "Starting LCD daemon"
+      /usr/local/sbin/LCDd.sh &
+      echo "$!" > /var/run/lcdd.pid
+      ;;
+   stop)
+      echo "Stopping LCD daemon"
+      kill $(cat /var/run/lcdd.pid)
+      rm -f /var/run/lcdd.pid
+      ;;
+      *)
+      echo "Usage: /etc/init.d/lcdd {start|stop}"
+      exit 1
+      ;;
+esac
+
+exit 0

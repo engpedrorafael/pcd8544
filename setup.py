@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import os
+
 from distutils.core import setup
 setup(
     name = "pcd8544",
@@ -13,3 +15,7 @@ setup(
     packages=['pcd8544'],
     package_dir={'pcd8544': 'src'}
 )
+
+print "--- Installing LCD service daemon ---"
+os.chdir("scripts")
+os.system("./installLCDd.sh")
