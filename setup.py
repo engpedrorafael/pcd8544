@@ -16,6 +16,11 @@ setup(
     package_dir={'pcd8544': 'src'}
 )
 
-print "--- Installing LCD service daemon ---"
-os.chdir("scripts")
-os.system("./installLCDd.sh")
+opt = raw_input("Install LCD Service deamon? y/[n] ")
+if opt.lower() == "y":
+    print "--- Installing LCD service daemon ---"
+    os.chdir("scripts")
+    os.system("./installLCDd.sh")
+    print "Send text to LCD through pipe /dev/lcd:"
+    print '   echo "Hello" > /dev/lcd'
+

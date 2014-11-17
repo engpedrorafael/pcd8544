@@ -5,6 +5,9 @@ import sys
 import time
 from commands import getstatusoutput
 
+N_COLS=14
+N_LINES=5
+
 if os.name != 'posix':
     sys.exit('platform not supported')
 
@@ -15,49 +18,58 @@ hb=0
 def ifInfo():
     global hb
 
+    lcd.locate(0, 5)
     st,out = getstatusoutput('ifconfig | grep "inet addr" | grep -v "127.0.0.1"')
     lineN=2
     if out:
-        for line in [x for x in out.split(" ") if ":" in x and "cast" not in x]:
-            lcd.locate(0, lineN)
-            lcd.text(line.split(':')[1])
-            lineN += 1
-
-        st,out = getstatusoutput("/sbin/ip route | awk '/default/ { print $3 }'")
-        lcd.locate(0, lineN)
-        lcd.text(out)
-    else:
-        lcd.cls()
-        lcd.locate(0, lineN)
+        for line in [x for x in out.split(" ") if ":" in x and "cast" not in x and "addr" in x]:
+            IP=(line.split(':')[1])
         if hb:
-            lcd.text("            ")
-        else:
-            lcd.text("  No network")
+            IP=IP.replace(".",",")
 
-    lcd.locate(0,0)
-    st,hostName=getstatusoutput("cat /etc/hostname")
-    lcd.text(hostName)
+        lcd.text(IP+" "*(N_COLS-len(IP)))
 
 
-    lcd.locate(0, 5)
-    if hb:
-        lcd.text(".")
-        hb=0
     else:
-        lcd.text(" ")
-        hb=1
+        if hb:
+            lcd.text(""*N_COLS)
+        else:
+            lcd.text("  No network  ")
+    if hb:
+        hb= 0
+    else:
+        hb= 1
 
+class LCD:
+    vPos=0
+    hPos=0
 
-def stats():
-    lcd.cls()
-    while 1:
+    def __init__(self):
+        lcd.init()
+        lcd.backlight(1)
+        lcd.cls()
+
+    def write(self, line):
         ifInfo()
-        time.sleep(2)
+        lcd.locate(self.hPos, self.vPos)
+        lcd.text(line[0:N_COLS])
+
 
 def main():
-    lcd.init()
-    lcd.backlight(1)
-    stats()
+    myLCD=LCD()
+
+    ifInfo()
+
+    f=open('/dev/lcd')
+    while True:
+        ifInfo()
+
+        fifo=f.readline()
+        if fifo != "":
+            myLCD.write(fifo.strip())
+        else:
+            time.sleep(2)
+
 
 
 if __name__ == "__main__":

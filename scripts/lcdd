@@ -12,13 +12,18 @@
 case "$1" in
   start)
       echo "Starting LCD daemon"
-      /usr/local/sbin/LCDd.sh &
+      mkfifo  /dev/lcd > /dev/null 2>&1
+      /usr/local/sbin/LCDd.py &
       echo "$!" > /var/run/lcdd.pid
+      echo "running..." > /dev/lcd
       ;;
    stop)
       echo "Stopping LCD daemon"
+      echo " STOPPED " > /dev/lcd
+      sleep 2
       kill $(cat /var/run/lcdd.pid)
       rm -f /var/run/lcdd.pid
+      rm /dev/lcd > /dev/null 2>&1
       ;;
       *)
       echo "Usage: /etc/init.d/lcdd {start|stop}"
