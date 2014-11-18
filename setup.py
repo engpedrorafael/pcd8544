@@ -19,8 +19,10 @@ setup(
 opt = raw_input("Install LCD Service deamon? y/[n] ")
 if opt.lower() == "y":
     print "--- Installing LCD service daemon ---"
-    os.chdir("scripts")
+    os.chdir("LCDd")
     os.system("./installLCDd.sh")
+    print 'Start the service by rebooting or:'
+    print '   /etc/init.d/lcdd start'
     print "Send text to LCD through pipe /dev/lcd:"
     print '   echo "Hello" > /dev/lcd'
 

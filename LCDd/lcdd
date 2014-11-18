@@ -15,11 +15,11 @@ case "$1" in
       mkfifo  /dev/lcd > /dev/null 2>&1
       /usr/local/sbin/LCDd.py &
       echo "$!" > /var/run/lcdd.pid
-      echo "running..." > /dev/lcd
+      echo $(cat /etc/hostname) > /dev/lcd
       ;;
    stop)
       echo "Stopping LCD daemon"
-      echo " STOPPED " > /dev/lcd
+      echo "\n  STOPPED " > /dev/lcd
       sleep 2
       kill $(cat /var/run/lcdd.pid)
       rm -f /var/run/lcdd.pid

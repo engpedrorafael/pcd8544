@@ -7,6 +7,8 @@ from commands import getstatusoutput
 
 N_COLS=14
 N_LINES=5
+CURSOR="_"
+PERIOD=1
 
 if os.name != 'posix':
     sys.exit('platform not supported')
@@ -14,7 +16,8 @@ if os.name != 'posix':
 from datetime import datetime
 import pcd8544.lcd as lcd
 
-hb=0
+hb=False
+
 def ifInfo():
     global hb
 
@@ -24,25 +27,17 @@ def ifInfo():
     if out:
         for line in [x for x in out.split(" ") if ":" in x and "cast" not in x and "addr" in x]:
             IP=(line.split(':')[1])
-        if hb:
-            IP=IP.replace(".",",")
-
         lcd.text(IP+" "*(N_COLS-len(IP)))
-
-
     else:
         if hb:
-            lcd.text(""*N_COLS)
+            lcd.text(" "*N_COLS)
         else:
             lcd.text("  No network  ")
-    if hb:
-        hb= 0
-    else:
-        hb= 1
 
 class LCD:
     vPos=0
     hPos=0
+    lines=[]
 
     def __init__(self):
         lcd.init()
@@ -51,11 +46,31 @@ class LCD:
 
     def write(self, line):
         ifInfo()
+        self.lines.insert(0,line[0:N_COLS])
+        if len(self.lines) == 6:
+            self.lines.pop()
+            for i,l in enumerate(self.lines):
+                lcd.locate(0, i)
+                lcd.text(self.lines[4-i]+" "*(N_COLS-len(self.lines[4-i])))
+            self.hPos = min(len(self.lines[0]), N_COLS-1)
+        else:
+            lcd.locate(self.hPos, self.vPos)
+            lcd.text(self.lines[0])
+            self.vPos +=1
+            if self.vPos == 5:
+                self.vPos =4
+                self.hPos = min(len(self.lines[0]), N_COLS-1)
+
+    def blinkCursor(self, hb):
         lcd.locate(self.hPos, self.vPos)
-        lcd.text(line[0:N_COLS])
+        if hb:
+            lcd.text(CURSOR)
+        else:
+            lcd.text(" ")
 
 
 def main():
+    global hb
     myLCD=LCD()
 
     ifInfo()
@@ -64,11 +79,15 @@ def main():
     while True:
         ifInfo()
 
+        hb = not hb
+        myLCD.blinkCursor(hb)
+
+
         fifo=f.readline()
         if fifo != "":
-            myLCD.write(fifo.strip())
+            myLCD.write(fifo.split('\n')[0])
         else:
-            time.sleep(2)
+            time.sleep(PERIOD)
 
 
 
